@@ -1,12 +1,15 @@
 package com.bootcamp.parkinglot;
 
+import com.bootcamp.com.bootcamp.constants.EventTypes;
 import com.bootcamp.domain.Car;
 import com.bootcamp.domain.ParkingLotOwner;
 import com.bootcamp.domain.Traveller;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +26,11 @@ public class ParkingLotTest {
     public void testToParkTheCar(){
 
         car = new Car("123");
-        owner = new ParkingLotOwner("12");
-        parkingLot = new ParkingLot(owner,10);
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+        owner = new ParkingLotOwner(subscribeToEvents);
+        parkingLot = new ParkingLot(10);
 
         assertTrue(parkingLot.parkTheCar(car));
     }
@@ -32,8 +38,13 @@ public class ParkingLotTest {
     public void testToParkTheCarWhenParkingIsFull(){
 
         car = new Car("123");
-        owner = new ParkingLotOwner("12");
-        parkingLot = new ParkingLot(owner,0);
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+        owner = new ParkingLotOwner(subscribeToEvents);
+
+        parkingLot = new ParkingLot(0);
+        parkingLot.registerObserver(owner);
 
         assertFalse(parkingLot.parkTheCar(car));
     }
@@ -42,9 +53,13 @@ public class ParkingLotTest {
     public void testToParkTheCarTwice(){
 
         car = new Car("1234");
-        owner = new ParkingLotOwner("123");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+        owner = new ParkingLotOwner(subscribeToEvents);
 
-        parkingLot = new ParkingLot(owner,10);
+
+        parkingLot = new ParkingLot(10);
 
         parkingLot.parkTheCar(car);
         assertFalse(parkingLot.parkTheCar(car));
@@ -53,9 +68,12 @@ public class ParkingLotTest {
     @Test
     public void testToUnparkParkedCar(){
         car = new Car("12349");
-        owner = new ParkingLotOwner("189");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+        owner = new ParkingLotOwner(subscribeToEvents);
 
-        parkingLot = new ParkingLot(owner,10);
+        parkingLot = new ParkingLot(10);
 
         parkingLot.parkTheCar(car);
         assertEquals(car, parkingLot.unparkTheCar(car));
@@ -64,9 +82,12 @@ public class ParkingLotTest {
     @Test
     public void testToUnparkUnParkedCar(){
         car = new Car("123990");
-        owner = new ParkingLotOwner("990");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+        owner = new ParkingLotOwner(subscribeToEvents);
 
-        parkingLot = new ParkingLot(owner,10);
+        parkingLot = new ParkingLot(10);
 
         assertNotEquals(car, parkingLot.unparkTheCar(car));
     }
@@ -74,8 +95,13 @@ public class ParkingLotTest {
     @Test
     public void testIfOwnerIsNotifiedWhenParkingIsFull(){
         car = new Car("23457");
-        ParkingOwnerStub owner = new ParkingOwnerStub();
-        parkingLot = new ParkingLot(owner,1);
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+        ParkingOwnerStub owner = new ParkingOwnerStub(subscribeToEvents);
+
+        parkingLot = new ParkingLot(1);
+        parkingLot.registerObserver(owner);
         parkingLot.parkTheCar(car);
         parkingLot.unparkTheCar(car);
         parkingLot.parkTheCar(car);
@@ -86,10 +112,15 @@ public class ParkingLotTest {
 
     @Test
     public void testIfOwnerIsNotifiedWhenParkingIsAvailable(){
-        Car firstCar = new Car("23457");
+        Car firstCar = new Car("2345700");
         Car secondCar = new Car("239089");
-        ParkingOwnerStub owner = new ParkingOwnerStub();
-        parkingLot = new ParkingLot(owner,2);
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.PARKINGAVAILABLE);
+        subscribeToEvents.add(EventTypes.PARKINGFULL);
+
+        ParkingOwnerStub owner = new ParkingOwnerStub(subscribeToEvents);
+        parkingLot = new ParkingLot(2);
+        parkingLot.registerObserver(owner);
         parkingLot.parkTheCar(firstCar);
         parkingLot.parkTheCar(secondCar);
         parkingLot.unparkTheCar(firstCar);
@@ -97,6 +128,77 @@ public class ParkingLotTest {
         int expectedNotifyCount=1;
         int actualNotifyCount=owner.getNotificationCountAvailable();
         assertEquals(expectedNotifyCount,actualNotifyCount);
+    }
+
+    @Test
+    public void testIfAgentIsNotifiedWhen80percentFull(){
+        Car firstCar = new Car("2000");
+        Car secondCar = new Car("3000");
+        Car thirdCar = new Car("100000");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.GREATERTHAN80PERCENT);
+        subscribeToEvents.add(EventTypes.LESSTHAN80PERCENT);
+        AgentStub agent = new AgentStub(subscribeToEvents);
+        parkingLot = new ParkingLot(3);
+        parkingLot.registerObserver(agent);
+        parkingLot.parkTheCar(firstCar);
+        parkingLot.parkTheCar(secondCar);
+        int expectedNotifyCount=1;
+        int actualNotifyCount=agent.getNotifyCountForGreaterThan80();
+        assertEquals(expectedNotifyCount,actualNotifyCount);
+
+    }
+
+    @Test
+    public void testIfAgentIsNotifiedWhenLessThan80percent(){
+        Car firstCar = new Car("2000000");
+        Car secondCar = new Car("3777000");
+        Car thirdCar = new Car("188900000");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.GREATERTHAN80PERCENT);
+        subscribeToEvents.add(EventTypes.LESSTHAN80PERCENT);
+        AgentStub agent = new AgentStub(subscribeToEvents);
+        parkingLot = new ParkingLot(3);
+        parkingLot.registerObserver(agent);
+        parkingLot.parkTheCar(firstCar);
+        parkingLot.parkTheCar(secondCar);
+        parkingLot.unparkTheCar(firstCar);
+        int expectedNotifyCount=1;
+        int actualNotifyCount=agent.getNotifyCountForLessThan80();
+        assertEquals(expectedNotifyCount,actualNotifyCount);
+
+    }
+
+    @Test
+    public void testParkedCarNotFoundForPolice(){
+        Car firstCar = new Car("2000000");
+        Car thirdCar = new Car("188900000");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.CARNOTFOUND);
+        PoliceStub police = new PoliceStub(subscribeToEvents);
+        parkingLot = new ParkingLot(3);
+        parkingLot.registerObserver(police);
+        parkingLot.unparkTheCar(firstCar);
+        int expectedNotifyCount=1;
+        int actualNotifyCount=police.getCarNotFound();
+        assertEquals(expectedNotifyCount,actualNotifyCount);
+
+    }
+
+    @Test
+    public void testParkedCarNotFoundForAgent(){
+        Car firstCar = new Car("2000000");
+        Car thirdCar = new Car("188900000");
+        List<String> subscribeToEvents = new ArrayList<String>();
+        subscribeToEvents.add(EventTypes.CARNOTFOUND);
+        AgentStub agent = new AgentStub(subscribeToEvents);
+        parkingLot = new ParkingLot(3);
+        parkingLot.registerObserver(agent);
+        parkingLot.unparkTheCar(firstCar);
+        int expectedNotifyCount=1;
+        int actualNotifyCount=agent.getCarNotFound();
+        assertEquals(expectedNotifyCount,actualNotifyCount);
+
     }
 
 }

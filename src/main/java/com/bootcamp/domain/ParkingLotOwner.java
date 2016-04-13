@@ -1,32 +1,18 @@
 package com.bootcamp.domain;
 
-import com.bootcamp.parkinglot.ParkingLot;
-import com.bootcamp.parkinglot.ParkingLotNotifications;
+import com.bootcamp.parkinglot.Observer;
+
+import java.util.List;
 
 /**
  * Created by kausalyamani on 13/04/16.
  */
-public class ParkingLotOwner implements ParkingLotNotifications {
-    private String id;
+public class ParkingLotOwner extends Observer {
 
-    public void setId(String id) {
-        this.id = id;
+
+    public ParkingLotOwner(List<String> events) {
+        super(events);
     }
 
-    public ParkingLotOwner(){
-
-    }
-    public ParkingLotOwner(String id) {
-        this.id = id;
-    }
-
-    public void showParkingFullSign(){
-            System.out.println("parking lot is full");
-    }
-
-    public void removeParkingFullSign() {
-
-        System.out.println("parking is available");
-    }
 
 }

@@ -1,54 +1,84 @@
 package com.bootcamp.parkinglot;
 
+import com.bootcamp.com.bootcamp.constants.EventTypes;
 import com.bootcamp.domain.Car;
-import com.bootcamp.domain.ParkingLotOwner;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by kausalyamani on 13/04/16.
  */
-public class ParkingLot {
-    private static ParkingLot instance = null;
+public class ParkingLot implements Publisher {
+    private List<Observer> observers = null;
     private String id;
     private Integer numOfSlots;
-    private ParkingLotNotifications notifiableOwner;
     private List<Car> parkedCars;
     private boolean notifiedFullToOwner;
 
 
-    public ParkingLot(ParkingLotNotifications owner, int noOfSlots) {
+
+    public ParkingLot(int noOfSlots) {
         this.numOfSlots = noOfSlots;
         parkedCars = new ArrayList<Car>(numOfSlots);
-        this.notifiableOwner = owner;
+        this.observers = new ArrayList<Observer>();
     }
 
     public boolean parkTheCar(Car car) {
         if (!parkedCars.contains(car) && !isParkingFull()) {
             parkedCars.add(car);
             if (isParkingFull()) {
-                notifiableOwner.showParkingFullSign();
+                this.notifyAllObservers(EventTypes.PARKINGFULL,"Parking is full");
                 notifiedFullToOwner = true;
+            }
+            if(isParking80percentFull()){
+                this.notifyAllObservers(EventTypes.GREATERTHAN80PERCENT,"Parking is Greater than 80 % ");
+            }
+            if(!isParking80percentFull()){
+                this.notifyAllObservers(EventTypes.LESSTHAN80PERCENT,"Parking is less than 80 % ");
             }
             return true;
         }
         return false;
     }
 
-    private boolean isParkingFull() {
-        return parkedCars.size() == this.numOfSlots;
-    }
-
     public Car unparkTheCar(Car car) {
         if (parkedCars.remove(car)) {
             if (notifiedFullToOwner && !isParkingFull()) {
-                notifiableOwner.removeParkingFullSign();
+                notifyAllObservers(EventTypes.PARKINGAVAILABLE, "Parking is available");
                 notifiedFullToOwner = false;
             }
             return car;
         }
+        this.notifyAllObservers(EventTypes.CARNOTFOUND,"Car not found ");
         return null;
+    }
+
+    public void registerObserver(Observer observer) {
+        this.observers.add(observer);
+    }
+
+
+
+    public void notifyAllObservers(String eventName,String message) {
+        for(Observer observer : this.observers){
+            List<String> events = observer.getEvents();
+            if(events!=null){
+                for(String event : events){
+                    if(event.equals(eventName)){
+                        observer.notify(event,message);
+                    }
+                }
+            }
+        }
+    }
+
+
+    private boolean isParking80percentFull() {
+        return parkedCars.size() >= Math.floor(0.8 * numOfSlots);
+    }
+
+    private boolean isParkingFull() {
+        return parkedCars.size() == this.numOfSlots;
     }
 }
