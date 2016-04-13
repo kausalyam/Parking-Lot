@@ -5,17 +5,19 @@ package com.bootcamp.domain;
  */
 public class Car {
     private String id;
-    private String modelName;
 
-    public Car(String id, String name){
+    public Car(String id){
         this.id=id;
-        this.modelName=name;
     }
     public String getId() {
         return id;
     }
 
-    public String getModelName() {
-        return modelName;
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Car) {
+            return this.id.equals(((Car) obj).getId());
+        }
+        return false;
     }
 }

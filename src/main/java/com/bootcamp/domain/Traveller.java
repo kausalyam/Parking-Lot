@@ -26,16 +26,16 @@ public class Traveller {
         return name;
     }
 
-    public void getParkingLot() {
-        parkingLot = new ParkingLot();
-    }
+//    public void getParkingLot() {
+//        parkingLot = new ParkingLot();
+//    }
 
-    public boolean parkTheCar(){
-
-        return parkingLot.addCarToTheParkingLot(this.car);
-    }
-
-    public boolean unParkTheCar() {
-        return parkingLot.removeCarFromTheParkingLot(this.car);
-    }
+//    public boolean parkTheCar(){
+//
+//        return parkingLot.addCarToTheParkingLot(this.car);
+//    }
+//
+//    public boolean unParkTheCar() {
+//        return parkingLot.removeCarFromTheParkingLot(this.car);
+//    }
 }
